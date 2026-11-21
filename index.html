@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f8fc">
+  <meta name="description" content="Luyện IELTS Listening với giọng Anh-Anh, Anh-Úc, Anh-Mỹ và chép chính tả từng từ.">
+  <title>Listen & Type — IELTS Listening Dictation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: "#172b4d",
+            muted: "#6b7b93",
+            brand: "#3978d4",
+            line: "#e5ebf3"
+          },
+          fontFamily: {
+            sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body {
+      min-width: 320px;
+      margin: 0;
+      background: radial-gradient(ellipse at 12% 0%, rgba(205, 225, 255, .36), transparent 34rem), #f5f8fc;
+      color: #172b4d;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, select, textarea, input { font: inherit; }
+    button:focus-visible, select:focus-visible, textarea:focus-visible, input:focus-visible {
+      outline: 3px solid rgba(57, 120, 212, .35);
+      outline-offset: 3px;
+    }
+    [hidden] { display: none !important; }
+    .panel { box-shadow: 0 18px 55px rgba(32, 63, 105, .08); }
+    .word-slots { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: .75rem .6rem; }
+    .word-slot { display: inline-flex; align-items: flex-end; gap: .2rem; }
+    .word-hyphen { padding: 0 .05rem .67rem; color: #52647e; font-size: 1.1rem; font-weight: 600; }
+    .word-input {
+      width: var(--slot-width);
+      min-width: 3.2rem;
+      max-width: min(17rem, 75vw);
+      height: 3.2rem;
+      border: 0;
+      border-bottom: 2px solid #cbd5e1;
+      border-radius: .35rem .35rem 0 0;
+      background: #f8fafc;
+      padding: .45rem .45rem .35rem;
+      color: #172b4d;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 1.05rem;
+      text-align: center;
+      transition: border-color .16s ease, background .16s ease, color .16s ease;
+    }
+    .word-input:focus { border-bottom-color: #3978d4; background: #eff6ff; outline: none; }
+    .word-input.is-correct, .word-input:read-only {
+      border-bottom-color: #22c55e;
+      background: #f0fdf4;
+      color: #15803d;
+    }
+    .word-input.is-wrong { border-bottom-color: #ef4444; background: #fef2f2; color: #dc2626; }
+    .word-punctuation { padding-bottom: .67rem; color: #52647e; font-size: 1.1rem; font-weight: 600; }
+    .shake { animation: shake .28s ease-in-out; }
+    @keyframes shake {
+      20%, 60% { transform: translateX(-4px); }
+      40%, 80% { transform: translateX(4px); }
+    }
+    .speed-button[aria-pressed="true"] { border-color: #3978d4; background: #eff6ff; color: #245eaa; }
+    .progress-fill { transition: width .3s ease; }
+    @media (max-width: 480px) {
+      .word-slots { gap: .65rem .35rem; }
+      .word-input { height: 2.9rem; min-width: 2.8rem; padding-inline: .25rem; font-size: .96rem; }
+      .word-punctuation, .word-hyphen { padding-bottom: .56rem; font-size: 1rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+      .shake { animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-6 sm:px-7 sm:py-10">
+    <header class="mb-8 flex items-center justify-between gap-4">
+      <a href="#" class="flex items-center gap-3 text-ink no-underline" aria-label="Listen and Type, trang chủ">
+        <span class="grid h-11 w-11 place-items-center rounded-2xl bg-brand text-xl text-white shadow-lg shadow-blue-200/70" aria-hidden="true">♫</span>
+        <span>
+          <span class="block text-base font-extrabold tracking-tight sm:text-lg">Listen <span class="text-brand">&amp;</span> Type</span>
+          <span class="block text-xs font-medium text-muted">Luyện nghe chính tả từng từ</span>
+        </span>
+      </a>
+      <span class="hidden rounded-full border border-line bg-white/80 px-3 py-1.5 text-xs font-semibold text-muted sm:inline-flex">Nghe. Gõ. Tiến bộ.</span>
+    </header>
+
+    <main class="flex flex-1 items-start justify-center">
+      <section id="setup-view" class="panel w-full max-w-3xl rounded-3xl border border-white bg-white p-5 sm:p-9" aria-labelledby="setup-title">
+        <div class="mb-7">
+          <p class="mb-2 text-xs font-bold uppercase tracking-[.16em] text-brand">Word-by-word dictation</p>
+          <h1 id="setup-title" class="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">Luyện nghe IELTS, gõ từng từ</h1>
+          <p class="mt-3 max-w-2xl text-sm leading-6 text-muted">Dán transcript IELTS Listening hoặc đoạn tiếng Anh bất kỳ. Chọn giọng UK, Úc hoặc Mỹ; nghe từng câu rồi điền vào các ô từ.</p>
+        </div>
+        <form id="setup-form">
+          <label for="passage" class="mb-2 block text-sm font-bold text-ink">Đoạn văn tiếng Anh</label>
+          <textarea id="passage" rows="8" required spellcheck="true" placeholder="Ví dụ: Learning a new language takes time and practice. Listen carefully, then try to write each sentence. Don't worry about making mistakes!" class="w-full resize-y rounded-2xl border border-line bg-slate-50/70 px-4 py-3.5 text-sm leading-7 text-ink placeholder:text-slate-400 focus:border-brand focus:bg-white"></textarea>
+          <p id="setup-error" class="mt-2 min-h-5 text-sm font-medium text-red-600" role="alert"></p>
+          <fieldset class="mt-4">
+            <legend class="mb-2 text-sm font-bold text-ink">Kiểu bài luyện</legend>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-white p-3 transition has-[:checked]:border-brand has-[:checked]:bg-blue-50/60">
+                <input type="radio" name="passage-mode" value="monologue" checked class="mt-1 accent-brand">
+                <span>
+                  <span class="block text-sm font-semibold text-ink">Monolog</span>
+                  <span class="mt-1 block text-xs leading-5 text-muted">Một giọng đọc cho cả đoạn văn.</span>
+                </span>
+              </label>
+              <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-white p-3 transition has-[:checked]:border-brand has-[:checked]:bg-blue-50/60">
+                <input type="radio" name="passage-mode" value="dialogue" class="mt-1 accent-brand">
+                <span>
+                  <span class="block text-sm font-semibold text-ink">Dialog</span>
+                  <span class="mt-1 block text-xs leading-5 text-muted">Tách người nói theo mẫu <code>Tên: lời thoại</code>; mỗi người có một giọng riêng.</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+          <p class="mt-2 text-xs leading-5 text-muted">Phím tắt khi luyện: <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Enter</kbd>/<kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Space</kbd> kiểm tra từ · <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Ctrl</kbd> nghe lại · <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Alt+H</kbd> gợi ý</p>
+          <div class="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <span class="text-xs text-muted">Tách câu tự động theo dấu chấm, hỏi và cảm thán.</span>
+            <button type="submit" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand px-6 text-sm font-bold text-white shadow-lg shadow-blue-200/70 transition hover:-translate-y-0.5 hover:bg-blue-700">
+              Bắt đầu luyện tập <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section id="practice-view" class="panel w-full max-w-3xl rounded-3xl border border-white bg-white p-5 sm:p-9" aria-labelledby="practice-title" hidden>
+        <div class="mb-7 flex items-center justify-between gap-4">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[.16em] text-brand">Nghe và chép từng từ</p>
+            <h1 id="practice-title" class="mt-1 text-xl font-extrabold text-ink sm:text-2xl">Tập trung vào câu hiện tại</h1>
+          </div>
+          <button id="leave-practice" type="button" class="rounded-lg px-3 py-2 text-sm font-semibold text-muted transition hover:bg-slate-100 hover:text-ink">Thoát</button>
+        </div>
+
+        <div class="mb-6">
+          <div class="mb-2 flex items-center justify-between text-xs font-semibold text-muted">
+            <span id="progress-label">Câu 1 / 1</span>
+            <span id="progress-percent">0%</span>
+          </div>
+          <div class="h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-label="Tiến độ luyện tập" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="progress-fill" class="progress-fill h-full rounded-full bg-brand" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="mb-5 rounded-2xl border border-line bg-slate-50/70 p-4 sm:p-5">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <button id="replay-button" type="button" class="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand px-5 text-sm font-bold text-white transition hover:bg-blue-700" aria-label="Nghe ngay câu hiện tại (Ctrl)">
+              <span aria-hidden="true">▶</span> Nghe ngay <kbd class="hidden rounded bg-white/20 px-1.5 py-0.5 text-[10px] sm:inline">Ctrl</kbd>
+            </button>
+            <label class="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-ink">
+              <input id="auto-loop" type="checkbox" checked class="h-4 w-4 accent-brand">
+              Tự động lặp lại câu (Auto-Loop)
+            </label>
+            <label class="flex items-center gap-2 text-xs font-semibold text-muted">
+              Giọng đọc
+              <select id="voice-select" class="max-w-64 rounded-lg border border-line bg-white px-2 py-2 text-xs text-ink" aria-label="Chọn giọng đọc IELTS">
+                <option value="en-GB">🇬🇧 UK English (IELTS Standard)</option>
+                <option value="en-AU">🇦🇺 Australian English</option>
+                <option value="en-US">🇺🇸 US English</option>
+              </select>
+            </label>
+          </div>
+          <div class="mt-4 flex flex-wrap items-center gap-2" aria-label="Tốc độ đọc">
+            <span class="mr-1 text-xs font-semibold text-muted">Tốc độ:</span>
+            <button type="button" class="speed-button rounded-lg border border-line bg-white px-3 py-2 text-xs font-bold text-muted transition hover:border-brand" data-speed="0.75" aria-pressed="false">0.75x</button>
+            <button type="button" class="speed-button rounded-lg border border-line bg-white px-3 py-2 text-xs font-bold text-muted transition hover:border-brand" data-speed="1" aria-pressed="true">1.0x</button>
+            <button type="button" class="speed-button rounded-lg border border-line bg-white px-3 py-2 text-xs font-bold text-muted transition hover:border-brand" data-speed="1.25" aria-pressed="false">1.25x</button>
+            <button type="button" class="speed-button rounded-lg border border-line bg-white px-3 py-2 text-xs font-bold text-muted transition hover:border-brand" data-speed="1.5" aria-pressed="false">1.5x</button>
+            <button type="button" class="speed-button rounded-lg border border-line bg-white px-3 py-2 text-xs font-bold text-muted transition hover:border-brand" data-speed="1.75" aria-pressed="false">1.75x</button>
+            <button type="button" class="speed-button rounded-lg border border-line bg-white px-3 py-2 text-xs font-bold text-muted transition hover:border-brand" data-speed="2" aria-pressed="false">2.0x</button>
+          </div>
+          <p id="voice-status" class="mt-3 text-xs leading-5 text-muted" role="status"></p>
+          <p id="speaker-status" class="mt-2 text-xs leading-5 text-muted" role="status" hidden></p>
+          <p id="playback-status" class="mt-2 inline-flex min-h-8 items-center rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800" role="status" aria-live="polite">🔊 Đang chờ bắt đầu nghe.</p>
+        </div>
+
+        <div class="rounded-2xl border border-blue-100 bg-blue-50/50 px-4 py-6 sm:px-6 sm:py-8">
+          <p id="current-speaker" class="mb-3 text-center text-sm font-bold text-brand" hidden></p>
+          <p class="mb-5 text-center text-xs font-bold uppercase tracking-wider text-brand">Nhập từ bạn nghe được</p>
+          <div id="word-slots" class="word-slots" aria-label="Các ô nhập từ"></div>
+          <p id="keyboard-help" class="mt-6 text-center text-xs leading-5 text-muted">Bạn có thể nhập từ ở bất kỳ ô nào. Nhấn Enter hoặc Space để kiểm tra; ô đúng sẽ xanh và chuyển sang ô chưa hoàn thành tiếp theo.</p>
+        </div>
+
+        <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p id="word-status" class="min-h-5 text-sm font-semibold text-muted" role="status" aria-live="polite"></p>
+          <button id="hint-button" type="button" class="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 text-sm font-bold text-amber-800 transition hover:bg-amber-100" aria-label="Gợi ý từ đang gõ (Alt+H)">
+            <span aria-hidden="true">✦</span> Gợi ý từ đang gõ <kbd class="hidden rounded bg-amber-100 px-1.5 py-0.5 text-[10px] sm:inline">Alt+H</kbd>
+          </button>
+        </div>
+        <div id="sentence-complete" class="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800" role="status" aria-live="polite" hidden>
+          <p class="text-sm font-bold">Hoàn thành câu!</p>
+          <p id="completed-sentence" class="mt-1 text-sm leading-6"></p>
+          <button id="next-sentence" type="button" class="mt-3 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-700">Câu tiếp theo <span aria-hidden="true">↵</span></button>
+        </div>
+      </section>
+
+      <section id="summary-view" class="panel w-full max-w-3xl rounded-3xl border border-white bg-white p-5 sm:p-9" aria-labelledby="summary-title" hidden>
+        <div class="mb-7 text-center">
+          <span class="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-emerald-50 text-3xl text-emerald-600" aria-hidden="true">✓</span>
+          <p class="text-xs font-bold uppercase tracking-[.16em] text-brand">Hoàn thành buổi luyện tập</p>
+          <h1 id="summary-title" class="mt-2 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">Tuyệt vời! Bạn đã hoàn thành.</h1>
+          <p class="mt-2 text-sm text-muted">Kiên trì luyện tập, kỹ năng nghe của bạn sẽ ngày càng tốt hơn.</p>
+        </div>
+        <dl class="grid gap-3 sm:grid-cols-3">
+          <div class="rounded-2xl bg-blue-50/70 p-5 text-center">
+            <dt class="text-xs font-semibold text-muted">Tổng số từ</dt>
+            <dd id="summary-words" class="mt-2 text-2xl font-extrabold text-ink">0</dd>
+          </div>
+          <div class="rounded-2xl bg-rose-50/70 p-5 text-center">
+            <dt class="text-xs font-semibold text-muted">Số lần gõ sai</dt>
+            <dd id="summary-mistakes" class="mt-2 text-2xl font-extrabold text-ink">0</dd>
+          </div>
+          <div class="rounded-2xl bg-emerald-50/70 p-5 text-center">
+            <dt class="text-xs font-semibold text-muted">Tỷ lệ chính xác</dt>
+            <dd id="summary-accuracy" class="mt-2 text-2xl font-extrabold text-ink">100%</dd>
+          </div>
+        </dl>
+        <p id="summary-time" class="mt-4 text-center text-xs text-muted"></p>
+        <div class="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+          <button id="retry-button" type="button" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-line bg-white px-6 text-sm font-bold text-ink transition hover:border-brand hover:text-brand">Làm lại đoạn văn</button>
+          <button id="new-passage-button" type="button" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand px-6 text-sm font-bold text-white shadow-lg shadow-blue-200/70 transition hover:bg-blue-700">Nhập đoạn văn mới <span aria-hidden="true">→</span></button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="pt-8 text-center text-xs text-slate-400">Học từng từ, làm chủ cả câu.</footer>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const $ = (selector) => document.querySelector(selector);
+      const setupView = $("#setup-view");
+      const practiceView = $("#practice-view");
+      const summaryView = $("#summary-view");
+      const passageInput = $("#passage");
+      const slotsContainer = $("#word-slots");
+      const voiceSelect = $("#voice-select");
+      const speechAvailable = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+      const speakerLabel = $("#current-speaker");
+      const voiceProfiles = [
+        { code: "en-GB", pattern: /^en[-_]gb$/i, label: "🇬🇧 UK English (IELTS Standard)", preferred: /google uk english/i, familiar: /\b(daniel|serena)\b/i },
+        { code: "en-AU", pattern: /^en[-_]au$/i, label: "🇦🇺 Australian English", preferred: /\bkaren\b/i, familiar: /\blee\b/i },
+        { code: "en-US", pattern: /^en[-_]us$/i, label: "🇺🇸 US English", preferred: /google us english|\bsamantha\b/i, familiar: /microsoft (david|mark|zira)/i }
+      ];
+
+      let sentences = [];
+      let sentenceTokens = [];
+      let passageMode = "monologue";
+      let speakerVoices = new Map();
+      let currentSentence = 0;
+      let currentWord = 0;
+      let totalWords = 0;
+      let mistakes = 0;
+      let playbackSpeed = 1;
+      let advanceTimer = null;
+      let loopTimer = null;
+      let startedAt = 0;
+      let voices = [];
+      let sentenceFinished = false;
+      let speechRun = 0;
+      let utteranceSpeaking = false;
+      let voiceSelectionTouched = false;
+
+      function splitSentences(text) {
+        return (text.match(/[^.!?]+[.!?]+(?:["'”’)\]]*)|[^.!?]+$/g) || [])
+          .map((sentence) => sentence.trim())
+          .filter(Boolean);
+      }
+
+      function parsePassage(text, mode) {
+        if (mode === "monologue") {
+          return splitSentences(text).map((sentence) => ({ text: sentence, speaker: "" }));
+        }
+
+        const dialogueLines = [];
+        let currentSpeaker = "";
+        let currentText = "";
+        const flush = () => {
+          if (!currentText.trim()) return;
+          splitSentences(currentText).forEach((sentence) => {
+            dialogueLines.push({ text: sentence, speaker: currentSpeaker || "Narrator" });
+          });
+          currentText = "";
+        };
+
+        text.split(/\r?\n/).forEach((line) => {
+          const trimmed = line.trim();
+          if (!trimmed) return;
+          const speakerMatch = trimmed.match(/^([^:\r\n]{1,60}):\s*(.*)$/);
+          if (speakerMatch) {
+            flush();
+            currentSpeaker = speakerMatch[1].trim();
+            currentText = speakerMatch[2];
+          } else {
+            currentText += `${currentText ? " " : ""}${trimmed}`;
+          }
+        });
+        flush();
+
+        if (dialogueLines.some((entry) => entry.speaker !== "Narrator")) return dialogueLines;
+        return splitSentences(text).map((sentence) => ({ text: sentence, speaker: "Narrator" }));
+      }
+
+      function normalizeWord(word) {
+        return word.trim().normalize("NFKC").toLocaleLowerCase()
+          .replace(/^[\p{P}\p{S}]+|[\p{P}\p{S}]+$/gu, "");
+      }
+
+      function getTokenParts(token) {
+        const match = token.match(/^([\p{P}\p{S}]*)(.*?)([\p{P}\p{S}]*)$/u);
+        const prefix = match ? match[1] : "";
+        const word = match ? match[2] : token;
+        const suffix = match ? match[3] : "";
+        const parts = word.split(/(-+)/).filter(Boolean);
+        const words = parts.filter((part) => !/^-+$/.test(part) && normalizeWord(part));
+        return { prefix, suffix, parts, words };
+      }
+
+      function countWords(sentence) {
+        return sentence.split(/\s+/).filter(Boolean)
+          .reduce((count, token) => count + getTokenParts(token).words.length, 0);
+      }
+
+      function setView(view) {
+        setupView.hidden = view !== "setup";
+        practiceView.hidden = view !== "practice";
+        summaryView.hidden = view !== "summary";
+      }
+
+      function getSelectedVoice() {
+        const selected = voiceSelect.value;
+        if (selected.startsWith("voice:")) {
+          const voiceURI = selected.slice("voice:".length);
+          return voices.find((voice) => voice.voiceURI === voiceURI) || null;
+        }
+        const language = selected.replace(/^lang:/, "").toLowerCase();
+        return voices.find((voice) => voice.lang.toLowerCase() === language)
+          || null;
+      }
+
+      function getVoiceRank(voice, requestedLanguage) {
+        const preferredIndex = voiceProfiles.findIndex((profile) =>
+          profile.pattern.test(requestedLanguage));
+        const voiceIndex = voiceProfiles.findIndex((profile) => profile.pattern.test(voice.lang));
+        const regionRank = voiceIndex < 0
+          ? voiceProfiles.length
+          : preferredIndex < 0
+            ? voiceIndex
+            : (voiceIndex - preferredIndex + voiceProfiles.length) % voiceProfiles.length;
+        const profile = voiceProfiles[voiceIndex];
+        const nameRank = profile?.preferred.test(voice.name)
+          ? 0
+          : profile?.familiar.test(voice.name) ? 1 : 2;
+        return [regionRank, nameRank, voice.default ? 0 : 1, voice.name];
+      }
+
+      function getVoiceKey(voice) {
+        return voice.voiceURI || `${voice.name}|${voice.lang}`;
+      }
+
+      function buildSpeakerVoices() {
+        speakerVoices = new Map();
+        if (passageMode !== "dialogue") return;
+        const speakers = [...new Set(sentences.map((sentence) => sentence.speaker).filter(Boolean))];
+        if (!speakers.length) return;
+
+        const selectedVoice = getSelectedVoice();
+        const requestedLanguage = selectedVoice?.lang
+          || voiceSelect.value.replace(/^lang:/, "");
+        const candidates = voices.filter((voice) => /^en[-_]/i.test(voice.lang));
+        candidates.sort((a, b) => {
+          const rankA = getVoiceRank(a, requestedLanguage);
+          const rankB = getVoiceRank(b, requestedLanguage);
+          for (let index = 0; index < 3; index++) {
+            if (rankA[index] !== rankB[index]) return rankA[index] - rankB[index];
+          }
+          return rankA[3].localeCompare(rankB[3]);
+        });
+
+        const orderedVoices = selectedVoice
+          ? [selectedVoice, ...candidates.filter((voice) => getVoiceKey(voice) !== getVoiceKey(selectedVoice))]
+          : candidates;
+        speakers.forEach((speaker, index) => {
+          speakerVoices.set(speaker, orderedVoices.length ? orderedVoices[index % orderedVoices.length] : null);
+        });
+      }
+
+      function updateSpeakerStatus() {
+        const status = $("#speaker-status");
+        if (passageMode !== "dialogue") {
+          status.hidden = true;
+          speakerLabel.hidden = true;
+          return;
+        }
+
+        const speakers = [...new Set(sentences.map((sentence) => sentence.speaker).filter(Boolean))];
+        const voiceCount = new Set([...speakerVoices.values()].filter(Boolean).map(getVoiceKey)).size;
+        status.hidden = false;
+        status.textContent = speakers.length === 1 && speakers[0] === "Narrator"
+          ? "Không tìm thấy nhãn người nói dạng “Tên:”. Đang đọc toàn bộ văn bản bằng giọng Narrator."
+          : speakers.length > voiceCount
+            ? `${speakers.length} người nói, ${voiceCount} giọng tiếng Anh khả dụng; giọng sẽ được tái sử dụng khi cần.`
+            : `${speakers.length} người nói đã được tự động gán giọng riêng${voiceCount ? ` từ ${voiceCount} giọng tiếng Anh` : ""}.`;
+
+        const sentence = sentences[currentSentence];
+        const voice = sentence?.speaker ? speakerVoices.get(sentence.speaker) : null;
+        speakerLabel.hidden = !sentence?.speaker;
+        speakerLabel.textContent = sentence?.speaker
+          ? `👤 ${sentence.speaker}${voice ? ` · ${voice.name} (${voice.lang})` : ""}`
+          : "";
+      }
+
+      function stopPlayback(status = "") {
+        clearTimeout(loopTimer);
+        loopTimer = null;
+        speechRun++;
+        utteranceSpeaking = false;
+        if (speechAvailable) window.speechSynthesis.cancel();
+        if (status) $("#playback-status").textContent = status;
+      }
+
+      function speakCurrentSentence() {
+        if (sentenceFinished) return;
+        if (!sentences[currentSentence]) return;
+        if (!speechAvailable) {
+          $("#playback-status").textContent = "⚠️ Trình duyệt này không hỗ trợ Web Speech API.";
+          return;
+        }
+        clearTimeout(loopTimer);
+        loopTimer = null;
+        window.speechSynthesis.cancel();
+        const run = ++speechRun;
+        const sentence = sentences[currentSentence];
+        const utterance = new SpeechSynthesisUtterance(sentence.text);
+        const selectedVoice = passageMode === "dialogue"
+          ? speakerVoices.get(sentence.speaker) || null
+          : getSelectedVoice();
+        utterance.lang = selectedVoice
+          ? selectedVoice.lang
+          : getSelectedVoice()?.lang || voiceSelect.value.replace(/^lang:/, "");
+        utterance.rate = playbackSpeed;
+        if (selectedVoice) utterance.voice = selectedVoice;
+        utterance.onstart = () => {
+          if (run !== speechRun) return;
+          utteranceSpeaking = true;
+          $("#playback-status").textContent = "🔊 Đang phát âm...";
+        };
+        utterance.onend = () => {
+          if (run !== speechRun) return;
+          utteranceSpeaking = false;
+          if (sentenceFinished) return;
+          if ($("#auto-loop").checked) {
+            $("#playback-status").textContent = "⏳ Đang chờ lặp lại sau 2,5 giây...";
+            loopTimer = window.setTimeout(() => {
+              loopTimer = null;
+              if (run === speechRun && !sentenceFinished && $("#auto-loop").checked) {
+                speakCurrentSentence();
+              }
+            }, 2500);
+          } else {
+            $("#playback-status").textContent = "✓ Đã đọc xong. Bấm “Nghe ngay” để nghe lại.";
+          }
+        };
+        utterance.onerror = (event) => {
+          if (run === speechRun && event.error !== "canceled" && event.error !== "interrupted") {
+            utteranceSpeaking = false;
+            clearTimeout(loopTimer);
+            loopTimer = null;
+            $("#playback-status").textContent = "⚠️ Không thể phát âm thanh. Hãy thử giọng khác hoặc bấm nghe ngay.";
+          }
+        };
+        window.speechSynthesis.speak(utterance);
+      }
+
+      function playSuccessTone() {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        const context = new AudioContextClass();
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(880, context.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(1320, context.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.0001, context.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.12, context.currentTime + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.2);
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start();
+        oscillator.stop(context.currentTime + 0.21);
+        oscillator.addEventListener("ended", () => context.close());
+      }
+
+      function updateProgress() {
+        const percent = Math.round((currentSentence / sentences.length) * 100);
+        $("#progress-label").textContent = `Câu ${currentSentence + 1} / ${sentences.length}`;
+        $("#progress-percent").textContent = `${percent}%`;
+        $("#progress-fill").style.width = `${percent}%`;
+        practiceView.querySelector('[role="progressbar"]').setAttribute("aria-valuenow", String(percent));
+        updateSpeakerStatus();
+      }
+
+      function renderWordSlots() {
+        stopPlayback($("#auto-loop").checked
+          ? "⏳ Đang chuẩn bị phát câu hiện tại..."
+          : "⏸️ Auto-Loop đang tắt. Bấm “Nghe ngay” để nghe câu.");
+        const displayTokens = sentences[currentSentence].text.split(/\s+/).filter(Boolean);
+        sentenceTokens = displayTokens.flatMap((token) => getTokenParts(token).words);
+        currentWord = 0;
+        sentenceFinished = false;
+        slotsContainer.replaceChildren();
+        $("#sentence-complete").hidden = true;
+        $("#word-status").textContent = "";
+        $("#keyboard-help").hidden = false;
+
+        let wordIndex = 0;
+        displayTokens.forEach((token) => {
+          const { prefix, suffix, parts, words } = getTokenParts(token);
+          if (!words.length) {
+            const punctuation = document.createElement("span");
+            punctuation.className = "word-punctuation";
+            punctuation.textContent = token;
+            slotsContainer.append(punctuation);
+            return;
+          }
+          const group = document.createElement("span");
+          group.className = "inline-flex items-end gap-1";
+          if (prefix) {
+            const leading = document.createElement("span");
+            leading.className = "word-punctuation";
+            leading.textContent = prefix;
+            group.append(leading);
+          }
+
+          parts.forEach((part) => {
+            if (/^-+$/.test(part)) {
+              const hyphen = document.createElement("span");
+              hyphen.className = "word-hyphen";
+              hyphen.textContent = part;
+              hyphen.setAttribute("aria-hidden", "true");
+              group.append(hyphen);
+              return;
+            }
+            if (!normalizeWord(part)) return;
+
+            const slot = document.createElement("span");
+            slot.className = "word-slot";
+            const input = document.createElement("input");
+            input.type = "text";
+            input.autocomplete = "off";
+            input.autocapitalize = "off";
+            input.spellcheck = false;
+            input.className = "word-input";
+            input.dataset.index = String(wordIndex);
+            input.dataset.word = part;
+            input.style.setProperty("--slot-width", `${Math.max(3.2, Math.min(16, (part.length * 0.68) + 1.3))}rem`);
+            input.setAttribute("aria-label", `Từ ${wordIndex + 1} trong ${sentenceTokens.length}`);
+            input.setAttribute("aria-describedby", "keyboard-help");
+            input.addEventListener("keydown", handleWordKeydown);
+            input.addEventListener("focus", () => {
+              const focusedIndex = Number(input.dataset.index);
+              if (input.readOnly) {
+                focusNextAvailableWord(focusedIndex);
+                return;
+              }
+              currentWord = focusedIndex;
+            });
+            input.addEventListener("input", () => {
+              input.classList.remove("is-wrong", "shake");
+              $("#word-status").textContent = "";
+            });
+            slot.append(input);
+            group.append(slot);
+            wordIndex++;
+          });
+          if (suffix) {
+            const trailing = document.createElement("span");
+            trailing.className = "word-punctuation";
+            trailing.textContent = suffix;
+            group.append(trailing);
+          }
+          slotsContainer.append(group);
+        });
+
+        updateProgress();
+        const firstInput = slotsContainer.querySelector(".word-input");
+        if (firstInput) firstInput.focus();
+        if ($("#auto-loop").checked) speakCurrentSentence();
+      }
+
+      function startPractice(restart) {
+        if (!speechAvailable) {
+          $("#voice-status").textContent = "Trình duyệt này không hỗ trợ Web Speech API; hãy dùng Chrome, Edge hoặc Safari mới.";
+        }
+        if (!restart) {
+          passageMode = document.querySelector('input[name="passage-mode"]:checked').value;
+          sentences = parsePassage(passageInput.value, passageMode);
+          if (!sentences.length) {
+            $("#setup-error").textContent = "Vui lòng nhập ít nhất một câu tiếng Anh có nội dung.";
+            passageInput.focus();
+            return;
+          }
+          totalWords = sentences.reduce((count, sentence) => count + countWords(sentence.text), 0);
+          $("#setup-error").textContent = "";
+          buildSpeakerVoices();
+        }
+        clearTimeout(advanceTimer);
+        currentSentence = 0;
+        mistakes = 0;
+        startedAt = performance.now();
+        setView("practice");
+        renderWordSlots();
+      }
+
+      function focusNextAvailableWord(afterIndex) {
+        const inputs = [...slotsContainer.querySelectorAll(".word-input")];
+        for (let offset = 1; offset <= inputs.length; offset++) {
+          const nextIndex = (afterIndex + offset) % inputs.length;
+          if (!inputs[nextIndex].readOnly) {
+            inputs[nextIndex].focus();
+            return;
+          }
+        }
+      }
+
+      function markWrong(input) {
+        mistakes++;
+        input.classList.remove("is-wrong", "shake");
+        void input.offsetWidth;
+        input.classList.add("is-wrong", "shake");
+        $("#word-status").textContent = "Chưa đúng — thử lại nhé.";
+        requestAnimationFrame(() => {
+          input.focus();
+          input.select();
+        });
+      }
+
+      function checkWord(input) {
+        const index = Number(input.dataset.index);
+        if (input.readOnly || sentenceFinished) return;
+        const expected = input.dataset.word;
+        if (!normalizeWord(input.value) || normalizeWord(input.value) !== normalizeWord(expected)) {
+          markWrong(input);
+          return;
+        }
+
+        input.value = expected;
+        input.readOnly = true;
+        input.classList.remove("is-wrong", "shake");
+        input.classList.add("is-correct");
+        const completedWords = slotsContainer.querySelectorAll(".word-input:read-only").length;
+        if (completedWords < sentenceTokens.length) {
+          $("#word-status").textContent = `${completedWords} / ${sentenceTokens.length} từ đã đúng`;
+          focusNextAvailableWord(index);
+          return;
+        }
+
+        completeSentence();
+      }
+
+      function handleWordKeydown(event) {
+        const input = event.currentTarget;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          checkWord(input);
+        }
+      }
+
+      function completeSentence() {
+        sentenceFinished = true;
+        stopPlayback("✅ Đã hoàn thành câu.");
+        $("#word-status").textContent = "";
+        $("#keyboard-help").hidden = true;
+        const completed = sentences[currentSentence];
+        $("#completed-sentence").textContent = completed.speaker
+          ? `${completed.speaker}: ${completed.text}`
+          : completed.text;
+        $("#sentence-complete").hidden = false;
+        $("#next-sentence").focus();
+        playSuccessTone();
+        advanceTimer = window.setTimeout(advanceSentence, 1200);
+      }
+
+      function advanceSentence() {
+        clearTimeout(advanceTimer);
+        currentSentence++;
+        if (currentSentence >= sentences.length) {
+          finishPractice();
+          return;
+        }
+        renderWordSlots();
+      }
+
+      function finishPractice() {
+        stopPlayback("🎉 Đã hoàn thành bài luyện tập.");
+        const accuracy = totalWords
+          ? Math.max(0, Math.round(((totalWords - mistakes) / totalWords) * 100))
+          : 100;
+        const elapsed = Math.floor((performance.now() - startedAt) / 1000);
+        $("#summary-words").textContent = String(totalWords);
+        $("#summary-mistakes").textContent = String(mistakes);
+        $("#summary-accuracy").textContent = `${accuracy}%`;
+        $("#summary-time").textContent = `Hoàn thành trong ${Math.floor(elapsed / 60)} phút ${elapsed % 60} giây.`;
+        $("#progress-label").textContent = `Hoàn thành ${sentences.length} câu`;
+        $("#progress-percent").textContent = "100%";
+        $("#progress-fill").style.width = "100%";
+        practiceView.querySelector('[role="progressbar"]').setAttribute("aria-valuenow", "100");
+        setView("summary");
+        $("#new-passage-button").focus();
+      }
+
+      function populateVoices() {
+        if (!speechAvailable) {
+          $("#voice-select").disabled = true;
+          $("#voice-status").textContent = "Trình duyệt không hỗ trợ đọc văn bản; các ô từ vẫn có thể luyện tập.";
+          $("#playback-status").textContent = "⚠️ Web Speech API không khả dụng trong trình duyệt này.";
+          return;
+        }
+        voices = window.speechSynthesis.getVoices();
+        const previousSelection = voiceSelect.value;
+        const englishVoices = voices.filter((voice) => /^en[-_]/i.test(voice.lang));
+        const profileIndex = (voice) => voiceProfiles.findIndex((profile) => profile.pattern.test(voice.lang));
+        const preferenceRank = (voice) => {
+          const index = profileIndex(voice);
+          if (index < 0) return 1;
+          if (index === 0) {
+            if (/google uk english/i.test(voice.name)) return 0;
+            if (/\b(daniel|serena)\b/i.test(voice.name)) return 1;
+            return 2;
+          }
+          if (index === 1) {
+            if (/\bkaren\b/i.test(voice.name)) return 0;
+            if (/\blee\b/i.test(voice.name)) return 1;
+            return 2;
+          }
+          return voiceProfiles[index].preferred.test(voice.name) ? 0 : 1;
+        };
+        const sortedVoices = [...englishVoices].sort((a, b) => {
+          const regionOrder = (profileIndex(a) < 0 ? voiceProfiles.length : profileIndex(a))
+            - (profileIndex(b) < 0 ? voiceProfiles.length : profileIndex(b));
+          if (regionOrder) return regionOrder;
+          const preferredOrder = preferenceRank(a) - preferenceRank(b);
+          if (preferredOrder) return preferredOrder;
+          if (a.default !== b.default) return a.default ? -1 : 1;
+          if (a.localService !== b.localService) return a.localService ? -1 : 1;
+          return a.name.localeCompare(b.name);
+        });
+        const options = [];
+        voiceProfiles.forEach((profile) => {
+          const regionalVoices = sortedVoices.filter((voice) => profile.pattern.test(voice.lang));
+          regionalVoices.forEach((voice) => {
+            const option = document.createElement("option");
+            option.value = `voice:${voice.voiceURI || `${voice.name}|${voice.lang}`}`;
+            option.textContent = `${profile.label} — ${voice.name} (${voice.lang})${voice.default ? " · mặc định" : ""}`;
+            options.push(option);
+          });
+          const fallback = document.createElement("option");
+          fallback.value = `lang:${profile.code}`;
+          fallback.textContent = `${profile.label} — giọng mặc định của trình duyệt`;
+          options.push(fallback);
+        });
+        sortedVoices.filter((voice) => profileIndex(voice) < 0).forEach((voice) => {
+          const option = document.createElement("option");
+          option.value = `voice:${voice.voiceURI || `${voice.name}|${voice.lang}`}`;
+          option.textContent = `🌐 English (${voice.lang}) — ${voice.name}`;
+          options.push(option);
+        });
+        voiceSelect.replaceChildren(...options);
+        const selectionExists = options.some((option) => option.value === previousSelection);
+        const requestedLanguage = previousSelection.replace(/^lang:/, "");
+        const matchingVoice = sortedVoices.find((voice) =>
+          voice.lang.toLowerCase() === requestedLanguage.toLowerCase());
+        if (previousSelection.startsWith("lang:") && !voiceSelectionTouched && matchingVoice) {
+          voiceSelect.value = `voice:${matchingVoice.voiceURI || `${matchingVoice.name}|${matchingVoice.lang}`}`;
+        } else if (selectionExists) {
+          voiceSelect.value = previousSelection;
+        } else if (previousSelection.startsWith("voice:")) {
+          const previousVoice = voices.find((voice) =>
+            `voice:${voice.voiceURI || `${voice.name}|${voice.lang}`}` === previousSelection);
+          const previousProfile = previousVoice && voiceProfiles.find((profile) => profile.pattern.test(previousVoice.lang));
+          voiceSelect.value = `lang:${previousProfile ? previousProfile.code : "en-GB"}`;
+        } else {
+          voiceSelect.value = matchingVoice
+            ? `voice:${matchingVoice.voiceURI || `${matchingVoice.name}|${matchingVoice.lang}`}`
+            : `lang:${requestedLanguage}`;
+        }
+        $("#voice-status").textContent = englishVoices.length
+          ? `Đã tải ${englishVoices.length} giọng tiếng Anh; ưu tiên UK, Australian rồi US. Giọng đã chọn: ${getSelectedVoice()?.name || "mặc định trình duyệt"}.`
+          : "Chưa tìm thấy giọng tiếng Anh; có thể dùng giọng mặc định của trình duyệt.";
+        if (passageMode === "dialogue" && sentences.length) {
+          buildSpeakerVoices();
+          updateSpeakerStatus();
+        }
+      }
+
+      $("#setup-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        startPractice(false);
+      });
+      passageInput.addEventListener("input", () => {
+        $("#setup-error").textContent = "";
+      });
+      $("#replay-button").addEventListener("click", speakCurrentSentence);
+      voiceSelect.addEventListener("change", () => {
+        voiceSelectionTouched = true;
+        if (passageMode === "dialogue") {
+          buildSpeakerVoices();
+          updateSpeakerStatus();
+        }
+        const selectedVoice = getSelectedVoice();
+        $("#voice-status").textContent = selectedVoice
+          ? `Đã chọn ${selectedVoice.name} (${selectedVoice.lang}); áp dụng từ lần phát tiếp theo.`
+          : `Đã chọn ${voiceSelect.selectedOptions[0].textContent}; trình duyệt sẽ dùng giọng mặc định phù hợp.`;
+      });
+      $("#auto-loop").addEventListener("change", () => {
+        if ($("#auto-loop").checked) {
+          if (!sentenceFinished) speakCurrentSentence();
+          return;
+        }
+        clearTimeout(loopTimer);
+        loopTimer = null;
+        $("#playback-status").textContent = utteranceSpeaking
+          ? "🔊 Đang phát âm... Auto-Loop đã tắt."
+          : "⏸️ Auto-Loop đã tắt. Bấm “Nghe ngay” để phát câu.";
+      });
+      $("#hint-button").addEventListener("click", () => {
+        if (sentenceFinished) return;
+        const activeInput = document.activeElement;
+        const input = activeInput instanceof HTMLInputElement && activeInput.matches(".word-input") && !activeInput.readOnly
+          ? activeInput
+          : slotsContainer.querySelector(`[data-index="${currentWord}"]:not([readonly])`);
+        if (!input) return;
+        currentWord = Number(input.dataset.index);
+        input.value = input.dataset.word;
+        $("#word-status").textContent = "Đã điền từ gợi ý.";
+        input.focus();
+        input.select();
+      });
+      $("#next-sentence").addEventListener("click", advanceSentence);
+      $("#leave-practice").addEventListener("click", () => {
+        clearTimeout(advanceTimer);
+        stopPlayback("⏸️ Đã dừng phát âm.");
+        setView("setup");
+        passageInput.focus();
+      });
+      $("#retry-button").addEventListener("click", () => startPractice(true));
+      $("#new-passage-button").addEventListener("click", () => {
+        clearTimeout(advanceTimer);
+        passageInput.value = "";
+        $("#setup-error").textContent = "";
+        setView("setup");
+        passageInput.focus();
+      });
+      document.querySelectorAll(".speed-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          playbackSpeed = Number(button.dataset.speed);
+          document.querySelectorAll(".speed-button").forEach((item) => {
+            item.setAttribute("aria-pressed", String(item === button));
+          });
+        });
+      });
+      document.addEventListener("keydown", (event) => {
+        if (practiceView.hidden || event.metaKey) return;
+        if (event.altKey && event.key.toLowerCase() === "h") {
+          event.preventDefault();
+          $("#hint-button").click();
+          return;
+        }
+        if (event.altKey) return;
+        if (event.key === "Control" && !event.repeat) {
+          event.preventDefault();
+          speakCurrentSentence();
+          return;
+        }
+      });
+
+      if (speechAvailable) window.speechSynthesis.addEventListener("voiceschanged", populateVoices);
+      populateVoices();
+    })();
+  </script>
+</body>
+</html>
