@@ -133,7 +133,7 @@
               </label>
             </div>
           </fieldset>
-          <p class="mt-2 text-xs leading-5 text-muted">Phím tắt khi luyện: <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Enter</kbd>/<kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Space</kbd> kiểm tra từ · <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Ctrl</kbd> nghe lại · <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Alt+H</kbd> gợi ý</p>
+          <p class="mt-2 text-xs leading-5 text-muted">Phím tắt khi luyện: <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Enter</kbd>/<kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Space</kbd> kiểm tra từ · <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Ctrl</kbd> nghe lại · <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Alt+P</kbd> tạm dừng/tiếp tục · <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Alt+H</kbd> gợi ý</p>
           <div class="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
             <span class="text-xs text-muted">Tách câu tự động theo dấu chấm, hỏi và cảm thán.</span>
             <button type="submit" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand px-6 text-sm font-bold text-white shadow-lg shadow-blue-200/70 transition hover:-translate-y-0.5 hover:bg-blue-700">
@@ -166,6 +166,9 @@
           <div class="flex flex-wrap items-center justify-between gap-3">
             <button id="replay-button" type="button" class="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand px-5 text-sm font-bold text-white transition hover:bg-blue-700" aria-label="Nghe ngay câu hiện tại (Ctrl)">
               <span aria-hidden="true">▶</span> Nghe ngay <kbd class="hidden rounded bg-white/20 px-1.5 py-0.5 text-[10px] sm:inline">Ctrl</kbd>
+            </button>
+            <button id="pause-button" type="button" class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line bg-white px-4 text-sm font-bold text-ink transition hover:border-brand hover:text-brand" aria-label="Tạm dừng phát âm (Alt+P)">
+              <span id="pause-icon" aria-hidden="true">⏸</span> <span id="pause-label">Tạm dừng</span>
             </button>
             <label class="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-ink">
               <input id="auto-loop" type="checkbox" checked class="h-4 w-4 accent-brand">
@@ -281,6 +284,7 @@
       let sentenceFinished = false;
       let speechRun = 0;
       let utteranceSpeaking = false;
+      let playbackPaused = false;
       let voiceSelectionTouched = false;
 
       function splitSentences(text) {
@@ -437,8 +441,43 @@
         loopTimer = null;
         speechRun++;
         utteranceSpeaking = false;
+        playbackPaused = false;
+        updatePauseButton();
         if (speechAvailable) window.speechSynthesis.cancel();
         if (status) $("#playback-status").textContent = status;
+      }
+
+      function updatePauseButton() {
+        const button = $("#pause-button");
+        if (!button) return;
+        $("#pause-icon").textContent = playbackPaused ? "▶" : "⏸";
+        $("#pause-label").textContent = playbackPaused ? "Tiếp tục" : "Tạm dừng";
+        button.setAttribute("aria-label", playbackPaused
+          ? "Tiếp tục phát âm (Alt+P)"
+          : "Tạm dừng phát âm (Alt+P)");
+        button.setAttribute("aria-pressed", String(playbackPaused));
+      }
+
+      function togglePlaybackPause() {
+        if (!speechAvailable) return;
+        if (playbackPaused) {
+          window.speechSynthesis.resume();
+          playbackPaused = false;
+          utteranceSpeaking = true;
+          $("#playback-status").textContent = "🔊 Đang phát âm...";
+          updatePauseButton();
+          return;
+        }
+        if (!window.speechSynthesis.speaking && !utteranceSpeaking) {
+          $("#playback-status").textContent = "Chưa có âm thanh để tạm dừng.";
+          return;
+        }
+        clearTimeout(loopTimer);
+        loopTimer = null;
+        window.speechSynthesis.pause();
+        playbackPaused = true;
+        $("#playback-status").textContent = "⏸️ Đã tạm dừng phát âm.";
+        updatePauseButton();
       }
 
       function speakCurrentSentence() {
@@ -450,6 +489,8 @@
         }
         clearTimeout(loopTimer);
         loopTimer = null;
+        playbackPaused = false;
+        updatePauseButton();
         window.speechSynthesis.cancel();
         const run = ++speechRun;
         const sentence = sentences[currentSentence];
@@ -823,6 +864,7 @@
         $("#setup-error").textContent = "";
       });
       $("#replay-button").addEventListener("click", speakCurrentSentence);
+      $("#pause-button").addEventListener("click", togglePlaybackPause);
       voiceSelect.addEventListener("change", () => {
         voiceSelectionTouched = true;
         if (passageMode === "dialogue") {
@@ -886,6 +928,11 @@
         if (event.altKey && event.key.toLowerCase() === "h") {
           event.preventDefault();
           $("#hint-button").click();
+          return;
+        }
+        if (event.altKey && event.key.toLowerCase() === "p") {
+          event.preventDefault();
+          togglePlaybackPause();
           return;
         }
         if (event.altKey) return;
