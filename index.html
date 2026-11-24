@@ -210,6 +210,10 @@
             <span aria-hidden="true">✦</span> Gợi ý từ đang gõ <kbd class="hidden rounded bg-amber-100 px-1.5 py-0.5 text-[10px] sm:inline">Alt+H</kbd>
           </button>
         </div>
+        <div id="hint-panel" class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900" role="status" aria-live="polite" hidden>
+          <p id="hint-structure" class="text-sm font-bold"></p>
+          <p id="hint-definition" class="mt-1 text-sm leading-6 text-amber-800">Đang tìm định nghĩa...</p>
+        </div>
         <div id="sentence-complete" class="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800" role="status" aria-live="polite" hidden>
           <p class="text-sm font-bold">Hoàn thành câu!</p>
           <p id="completed-sentence" class="mt-1 text-sm leading-6"></p>
@@ -286,6 +290,7 @@
       let utteranceSpeaking = false;
       let playbackPaused = false;
       let voiceSelectionTouched = false;
+      const definitionCache = new Map();
 
       function splitSentences(text) {
         return (text.match(/[^.!?]+[.!?]+(?:["'”’)\]]*)|[^.!?]+$/g) || [])
@@ -574,6 +579,7 @@
         slotsContainer.replaceChildren();
         $("#sentence-complete").hidden = true;
         $("#word-status").textContent = "";
+        $("#hint-panel").hidden = true;
         $("#keyboard-help").hidden = false;
 
         let wordIndex = 0;
@@ -887,7 +893,24 @@
           ? "🔊 Đang phát âm... Auto-Loop đã tắt."
           : "⏸️ Auto-Loop đã tắt. Bấm “Nghe ngay” để phát câu.";
       });
-      $("#hint-button").addEventListener("click", () => {
+      async function getWordDefinition(word) {
+        if (definitionCache.has(word)) return definitionCache.get(word);
+        try {
+          const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.toLowerCase())}`);
+          if (!response.ok) throw new Error("Definition unavailable");
+          const entries = await response.json();
+          const definition = entries?.[0]?.meanings?.flatMap((meaning) => meaning.definitions || [])?.[0]?.definition;
+          const result = definition || "Không tìm thấy định nghĩa cho từ này.";
+          definitionCache.set(word, result);
+          return result;
+        } catch (_error) {
+          const result = "Không thể tải định nghĩa. Hãy dùng chữ cái đầu và độ dài của từ để đoán.";
+          definitionCache.set(word, result);
+          return result;
+        }
+      }
+
+      $("#hint-button").addEventListener("click", async () => {
         if (sentenceFinished) return;
         const activeInput = document.activeElement;
         const input = activeInput instanceof HTMLInputElement && activeInput.matches(".word-input") && !activeInput.readOnly
@@ -895,10 +918,17 @@
           : slotsContainer.querySelector(`[data-index="${currentWord}"]:not([readonly])`);
         if (!input) return;
         currentWord = Number(input.dataset.index);
-        input.value = input.dataset.word;
-        $("#word-status").textContent = "Đã điền từ gợi ý.";
+
+        const word = input.dataset.word;
+        const letters = [...word.normalize("NFKC")].filter((character) => /\p{L}/u.test(character));
+        const firstLetter = letters[0]?.toLocaleUpperCase() || "?";
+        $("#hint-structure").textContent = `Chữ cái đầu: ${firstLetter} · Độ dài: ${letters.length} chữ cái`;
+        $("#hint-definition").textContent = "Đang tìm định nghĩa...";
+        $("#hint-panel").hidden = false;
+
+        const definition = await getWordDefinition(word);
+        $("#hint-definition").textContent = `Định nghĩa: ${definition}`;
         input.focus();
-        input.select();
       });
       $("#next-sentence").addEventListener("click", advanceSentence);
       $("#leave-practice").addEventListener("click", () => {
