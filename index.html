@@ -133,7 +133,7 @@
               </label>
             </div>
           </fieldset>
-          <p class="mt-2 text-xs leading-5 text-muted">Phím tắt khi luyện: <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Enter</kbd>/<kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Space</kbd> kiểm tra từ · <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Ctrl</kbd> nghe lại · <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Alt+P</kbd> tạm dừng/tiếp tục · <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Alt+H</kbd> gợi ý</p>
+          <p class="mt-2 text-xs leading-5 text-muted">Phím tắt khi luyện: <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Enter</kbd>/<kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Tab</kbd>/<kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold"></kbd>Space</kbd> kiểm tra từ · <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Ctrl</kbd> nghe lại · <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Alt+P</kbd> tạm dừng/tiếp tục · <kbd class="rounded border border-line bg-slate-50 px-1.5 py-0.5 font-semibold">Alt+H</kbd> gợi ý</p>
           <div class="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
             <span class="text-xs text-muted">Tách câu tự động theo dấu chấm, hỏi và cảm thán.</span>
             <button type="submit" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand px-6 text-sm font-bold text-white shadow-lg shadow-blue-200/70 transition hover:-translate-y-0.5 hover:bg-blue-700">
@@ -201,7 +201,7 @@
           <p id="current-speaker" class="mb-3 text-center text-sm font-bold text-brand" hidden></p>
           <p class="mb-5 text-center text-xs font-bold uppercase tracking-wider text-brand">Nhập từ bạn nghe được</p>
           <div id="word-slots" class="word-slots" aria-label="Các ô nhập từ"></div>
-          <p id="keyboard-help" class="mt-6 text-center text-xs leading-5 text-muted">Bạn có thể nhập từ ở bất kỳ ô nào. Nhấn Enter hoặc Space để kiểm tra; ô đúng sẽ xanh và chuyển sang ô chưa hoàn thành tiếp theo.</p>
+          <p id="keyboard-help" class="mt-6 text-center text-xs leading-5 text-muted">Bạn có thể nhập từ ở bất kỳ ô nào. Nhấn Enter, Tab hoặc Space để kiểm tra; ô đúng sẽ xanh và chuyển sang ô chưa hoàn thành tiếp theo.</p>
         </div>
 
         <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -723,7 +723,7 @@
 
       function handleWordKeydown(event) {
         const input = event.currentTarget;
-        if (event.key === "Enter" || event.key === " ") {
+        if (event.key === "Enter" || event.key === " " || (event.key === "Tab" && !event.shiftKey)) {
           event.preventDefault();
           checkWord(input);
         }
