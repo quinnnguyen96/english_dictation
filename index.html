@@ -50,7 +50,7 @@
     .word-hyphen { padding: 0 .05rem .67rem; color: #52647e; font-size: 1.1rem; font-weight: 600; }
     .word-input {
       width: var(--slot-width);
-      min-width: 5.2rem;
+      min-width: 5ch;
       max-width: min(17rem, 75vw);
       height: 3.2rem;
       border: 0;
@@ -81,7 +81,7 @@
     .progress-fill { transition: width .3s ease; }
     @media (max-width: 480px) {
       .word-slots { gap: .65rem .35rem; }
-      .word-input { height: 2.9rem; min-width: 4.8rem; padding-inline: .25rem; font-size: .96rem; }
+      .word-input { height: 2.9rem; min-width: 5ch; padding-inline: .25rem; font-size: .96rem; }
       .word-punctuation, .word-hyphen { padding-bottom: .56rem; font-size: 1rem; }
     }
     @media (prefers-reduced-motion: reduce) {
@@ -622,7 +622,7 @@
             input.className = "word-input";
             input.dataset.index = String(wordIndex);
             input.dataset.word = part;
-            input.style.setProperty("--slot-width", `${Math.max(5.2, Math.min(16, (part.length * 0.68) + 1.3))}rem`);
+            input.style.setProperty("--slot-width", `${Math.min(part.length + 5, 17)}ch`);
             input.setAttribute("aria-label", `Từ ${wordIndex + 1} trong ${sentenceTokens.length}`);
             input.setAttribute("aria-describedby", "keyboard-help");
             input.addEventListener("keydown", handleWordKeydown);
