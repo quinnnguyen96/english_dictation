@@ -137,10 +137,24 @@
           <div class="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
             <span class="text-xs text-muted">Tách câu tự động theo dấu chấm, hỏi và cảm thán.</span>
             <button type="submit" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand px-6 text-sm font-bold text-white shadow-lg shadow-blue-200/70 transition hover:-translate-y-0.5 hover:bg-blue-700">
-              Bắt đầu luyện tập <span aria-hidden="true">→</span>
+              Xem Preview vocab <span aria-hidden="true">→</span>
             </button>
           </div>
         </form>
+      </section>
+
+      <section id="preview-view" class="panel w-full max-w-3xl rounded-3xl border border-white bg-white p-5 sm:p-9" aria-labelledby="preview-title" hidden>
+        <div class="mb-6">
+          <p class="mb-2 text-xs font-bold uppercase tracking-[.16em] text-brand">Preview vocab</p>
+          <h1 id="preview-title" class="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">Từ vựng trong đoạn văn</h1>
+          <p class="mt-2 text-sm leading-6 text-muted">Danh sách từ duy nhất, cấp độ CEFR ước lượng từ danh sách từ phổ biến; từ chưa có trong danh sách sẽ được đánh dấu chưa phân loại. Định nghĩa tiếng Anh và từ loại được tải từ Free Dictionary API.</p>
+        </div>
+        <p id="preview-status" class="mb-4 text-sm text-muted" role="status" aria-live="polite"></p>
+        <div id="vocabulary-list" class="max-h-[55vh] space-y-5 overflow-y-auto pr-1"></div>
+        <div class="mt-6 flex flex-col-reverse justify-between gap-3 sm:flex-row">
+          <button id="preview-back-button" type="button" class="min-h-11 rounded-xl border border-line bg-white px-5 text-sm font-bold text-ink transition hover:border-brand hover:text-brand">Quay lại chỉnh sửa</button>
+          <button id="start-practice-button" type="button" class="min-h-11 rounded-xl bg-brand px-5 text-sm font-bold text-white transition hover:bg-blue-700">Bắt đầu luyện tập →</button>
+        </div>
       </section>
 
       <section id="practice-view" class="panel w-full max-w-3xl rounded-3xl border border-white bg-white p-5 sm:p-9" aria-labelledby="practice-title" hidden>
@@ -213,6 +227,8 @@
         </div>
         <div id="hint-panel" class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900" role="status" aria-live="polite" hidden>
           <p id="hint-structure" class="text-sm font-bold"></p>
+          <p id="hint-metadata" class="mt-1 text-sm leading-6 text-amber-800"></p>
+          <p class="mt-1 text-xs text-amber-700">Từ loại và IPA được lấy từ Free Dictionary API.</p>
           <p class="mt-1 text-sm leading-6 text-amber-800">Mở Cambridge Dictionary để xem định nghĩa và ví dụ cho từ này.</p>
           <a id="hint-dictionary-link" class="mt-2 inline-flex font-bold text-amber-900 underline decoration-amber-400 underline-offset-2 hover:text-amber-700" target="_blank" rel="noopener noreferrer"></a>
         </div>
@@ -245,6 +261,26 @@
           </div>
         </dl>
         <p id="summary-time" class="mt-4 text-center text-xs text-muted"></p>
+        <section id="flashcards-section" class="mt-7 rounded-2xl border border-line bg-slate-50/70 p-4 sm:p-6" aria-labelledby="flashcards-title">
+          <h2 id="flashcards-title" class="text-lg font-extrabold text-ink">Từ bạn đã cần gợi ý</h2>
+          <p class="mt-1 text-sm leading-6 text-muted">Danh sách từ cần ôn và flashcards. Bấm vào thẻ để lật xem từ loại và định nghĩa tiếng Anh.</p>
+          <p id="flashcards-empty" class="mt-4 rounded-xl bg-white p-4 text-sm text-muted" hidden>Bạn không dùng gợi ý trong bài này — tuyệt vời!</p>
+          <div id="flashcards-content" hidden>
+            <ul id="hinted-word-list" class="mt-4 flex flex-wrap gap-2" aria-label="Danh sách từ đã cần gợi ý"></ul>
+            <p id="flashcard-count" class="mt-5 text-center text-xs font-semibold text-muted"></p>
+            <button id="flashcard-toggle" type="button" class="mt-2 flex min-h-48 w-full flex-col items-center justify-center gap-3 rounded-2xl border border-blue-100 bg-white p-6 text-center shadow-sm transition hover:border-brand focus-visible:outline-brand" aria-pressed="false">
+              <span id="flashcard-side-label" class="text-xs font-bold uppercase tracking-wider text-brand">Từ</span>
+              <span id="flashcard-word" class="text-2xl font-extrabold text-ink"></span>
+              <span id="flashcard-level" class="text-xs font-semibold text-muted"></span>
+              <span id="flashcard-detail" class="max-w-xl text-sm leading-6 text-muted" hidden></span>
+              <span class="text-xs text-muted">Bấm để lật thẻ</span>
+            </button>
+            <div class="mt-4 flex items-center justify-center gap-3">
+              <button id="flashcard-previous" type="button" class="min-h-10 rounded-lg border border-line bg-white px-4 text-sm font-semibold text-ink disabled:cursor-not-allowed disabled:opacity-40">← Trước</button>
+              <button id="flashcard-next" type="button" class="min-h-10 rounded-lg border border-line bg-white px-4 text-sm font-semibold text-ink disabled:cursor-not-allowed disabled:opacity-40">Tiếp →</button>
+            </div>
+          </div>
+        </section>
         <div class="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
           <button id="retry-button" type="button" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-line bg-white px-6 text-sm font-bold text-ink transition hover:border-brand hover:text-brand">Làm lại đoạn văn</button>
           <button id="new-passage-button" type="button" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand px-6 text-sm font-bold text-white shadow-lg shadow-blue-200/70 transition hover:bg-blue-700">Nhập đoạn văn mới <span aria-hidden="true">→</span></button>
@@ -261,6 +297,7 @@
 
       const $ = (selector) => document.querySelector(selector);
       const setupView = $("#setup-view");
+      const previewView = $("#preview-view");
       const practiceView = $("#practice-view");
       const summaryView = $("#summary-view");
       const passageInput = $("#passage");
@@ -292,6 +329,31 @@
       let utteranceSpeaking = false;
       let playbackPaused = false;
       let voiceSelectionTouched = false;
+      let hintRequest = 0;
+      const wordMetadataCache = new Map();
+      let vocabularyItems = [];
+      let previewRequest = 0;
+      let hintedWords = new Map();
+      let flashcardItems = [];
+      let currentFlashcard = 0;
+      let flashcardFlipped = false;
+      const cefrWordLists = [
+        {
+          level: "A1-A2",
+          label: "Beginner",
+          words: new Set("a about after again all also always and animal another any ask at away back be because before begin best better big both bring build but buy by call can car care carry change child city class clean close cold come common complete cook country course cut day different do dog down during each early earth eat end enough even example eye face family far fast feel few find first follow food for form friend from full fun game get give go good great group grow guess hand happen happy hard have he head help here high home house how I idea if important in into it job just keep kind know land large last late learn leave left let life like line little listen live long look lose lot love low make man many map mark may mean meet money month more morning most mother move much music must name near need never new next night no not now number of off often old on once one only open or other our out over own part people place play point put question quick right room run same say school sea seem sentence set she show side small so some something sometimes song soon sound speak spend start state stay still stop story study such take talk tell than that the their them then there these they thing think this those through time to together too tree try turn two under understand up us use very want warm watch water way we well what when where which while white who why will with woman word work world would write year yes you young don't".split(/\s+/))
+        },
+        {
+          level: "B1-B2",
+          label: "Intermediate",
+          words: new Set("ability achieve active actually advantage advice affect although amount appear apply arrange arrive article attention audience available average avoid aware basic behavior benefit borrow brave career cause careful carefully certain challenge choice choose collect comfortable communicate community compare competition condition consider contain continue control conversation culture decision describe design develop difference direction discuss education effect effort environment especially event experience explain express fact familiar feature finish focus foreign future general government imagine improve include increase independent influence information instead interest introduce language level local manage material maybe method mind mistake natural necessary notice opportunity opinion organize original particular percent plan population possible practice prepare present pressure prevent product project provide purpose quality realize reason receive recent recognize recommend reduce relationship remember require research resource responsibility result review risk role rule save science search sentence serious situation skill society solution source specific standard subject successful suggest support system technology television tend though thought travel trouble truth value various visit voice wonder worry".split(/\s+/))
+        },
+        {
+          level: "C1-C2",
+          label: "Advanced",
+          words: new Set("abandon abundant accessible accommodate acknowledge acquisition adequate advocate ambiguous analyse anticipate apparent articulate aspect assess assumption authentic authority cease coherent coincide compile comprehensive comprise conceive considerable consistent controversial convey crucial cumulative demonstrate denote diminish discrete distinguish diverse elaborate eliminate emerge empirical enhance ensure equivalent establish evaluate evident facilitate fluctuate fundamental hypothesis implication incentive inevitable infer infrastructure inherent initiate innovative insight integral interpret justify maintain manipulate marginal mechanism paradigm perceive persist plausible precise preliminary presume profound promote proportion rational recover refine reinforce reluctant resolve retain reveal rigid simulate sophisticated substantial substitute subsequent sufficient supplement suppress sustainable theoretical thereby undergo undermine undertake valid viable".split(/\s+/))
+        }
+      ];
 
       function splitSentences(text) {
         return (text.match(/[^.!?]+[.!?]+(?:["'”’)\]]*)|[^.!?]+$/g) || [])
@@ -338,6 +400,33 @@
           .replace(/^[\p{P}\p{S}]+|[\p{P}\p{S}]+$/gu, "");
       }
 
+      function getWordLevel(word) {
+        const normalized = normalizeWord(word);
+        const candidates = new Set([normalized]);
+        if (normalized.endsWith("ies")) candidates.add(`${normalized.slice(0, -3)}y`);
+        if (normalized.endsWith("s")) candidates.add(normalized.slice(0, -1));
+        if (normalized.endsWith("es")) candidates.add(normalized.slice(0, -2));
+        if (normalized.endsWith("ed")) {
+          const root = normalized.slice(0, -2);
+          candidates.add(root);
+          candidates.add(`${root}e`);
+          if (/(.)\1$/.test(root)) candidates.add(root.slice(0, -1));
+        }
+        if (normalized.endsWith("ing")) {
+          const root = normalized.slice(0, -3);
+          candidates.add(root);
+          candidates.add(`${root}e`);
+          if (/(.)\1$/.test(root)) candidates.add(root.slice(0, -1));
+        }
+        if (normalized.endsWith("ly")) candidates.add(normalized.slice(0, -2));
+
+        for (const { level, words } of cefrWordLists) {
+          if ([...candidates].some((candidate) =>
+            words.has(candidate.toLowerCase()) || words.has(candidate))) return level;
+        }
+        return "unclassified";
+      }
+
       function getTokenParts(token) {
         const match = token.match(/^([\p{P}\p{S}]*)(.*?)([\p{P}\p{S}]*)$/u);
         const prefix = match ? match[1] : "";
@@ -353,8 +442,130 @@
           .reduce((count, token) => count + getTokenParts(token).words.length, 0);
       }
 
+      function collectVocabulary() {
+        const words = new Map();
+        sentences.forEach(({ text }) => {
+          text.split(/\s+/).filter(Boolean).forEach((token) => {
+            getTokenParts(token).words.forEach((word) => {
+              const key = normalizeWord(word);
+              const item = words.get(key);
+              if (item) {
+                item.count++;
+              } else {
+                words.set(key, { key, word, count: 1, level: getWordLevel(key), metadata: null, metadataError: false });
+              }
+            });
+          });
+        });
+        return [...words.values()];
+      }
+
+      function formatVocabularyMetadata(metadata) {
+        const meanings = metadata.meanings
+          .filter((meaning) => meaning.definitions.length)
+          .map((meaning) => `${formatPartOfSpeech(meaning.partOfSpeech)}: ${meaning.definitions.slice(0, 2).join("; ")}`);
+        return meanings.length ? meanings.join(" · ") : "No English definition or part of speech found.";
+      }
+
+      function renderVocabularyPreview() {
+        const list = $("#vocabulary-list");
+        list.replaceChildren();
+        const groups = [
+          ...cefrWordLists.map(({ level, label }) => ({ level, label })),
+          { level: "unclassified", label: "Chưa phân loại" }
+        ];
+
+        groups.forEach(({ level, label }) => {
+          const items = vocabularyItems.filter((item) => item.level === level);
+          if (!items.length) return;
+
+          const section = document.createElement("section");
+          const heading = document.createElement("h2");
+          heading.className = "mb-2 text-sm font-extrabold text-ink";
+          heading.textContent = `${level === "unclassified" ? label : `${level} · ${label}`} (${items.length})`;
+          const entries = document.createElement("ul");
+          entries.className = "space-y-2";
+
+          items.forEach((item) => {
+            const row = document.createElement("li");
+            row.className = "rounded-xl border border-line bg-white p-3";
+            const title = document.createElement("div");
+            title.className = "flex flex-wrap items-center justify-between gap-2";
+            const word = document.createElement("span");
+            word.className = "font-bold text-ink";
+            word.textContent = item.word;
+            const count = document.createElement("span");
+            count.className = "text-xs text-muted";
+            count.textContent = `${item.count}×`;
+            title.append(word, count);
+            const details = document.createElement("p");
+            details.className = "mt-1 text-sm leading-6 text-muted";
+            details.textContent = "Đang tải từ loại và định nghĩa tiếng Anh...";
+            item.detailsElement = details;
+            row.append(title, details);
+            entries.append(row);
+          });
+
+          section.append(heading, entries);
+          list.append(section);
+        });
+      }
+
+      async function loadMetadataForItems(items, onProgress) {
+        let nextIndex = 0;
+        let completed = 0;
+        const workerCount = Math.min(4, items.length);
+        await Promise.all(Array.from({ length: workerCount }, async () => {
+          while (nextIndex < items.length) {
+            const item = items[nextIndex++];
+            try {
+              item.metadata = await getWordMetadata(item.key);
+            } catch (_error) {
+              item.metadataError = true;
+            }
+            completed++;
+            if (item.detailsElement) {
+              item.detailsElement.textContent = item.metadataError
+                ? "Definition unavailable."
+                : formatVocabularyMetadata(item.metadata);
+            }
+            onProgress(completed, items.length, item);
+          }
+        }));
+      }
+
+      function startPreview() {
+        passageMode = document.querySelector('input[name="passage-mode"]:checked').value;
+        sentences = parsePassage(passageInput.value, passageMode);
+        if (!sentences.length) {
+          $("#setup-error").textContent = "Vui lòng nhập ít nhất một câu tiếng Anh có nội dung.";
+          passageInput.focus();
+          return;
+        }
+        totalWords = sentences.reduce((count, sentence) => count + countWords(sentence.text), 0);
+        if (!totalWords) {
+          $("#setup-error").textContent = "Đoạn văn cần có ít nhất một từ tiếng Anh.";
+          passageInput.focus();
+          return;
+        }
+        $("#setup-error").textContent = "";
+        buildSpeakerVoices();
+        vocabularyItems = collectVocabulary();
+        hintedWords = new Map();
+        setView("preview");
+        renderVocabularyPreview();
+        const request = ++previewRequest;
+        $("#preview-status").textContent = `Đang tải định nghĩa cho ${vocabularyItems.length} từ...`;
+        loadMetadataForItems(vocabularyItems, (completed, total) => {
+          if (request === previewRequest) {
+            $("#preview-status").textContent = `Đã tra ${completed} / ${total} từ.`;
+          }
+        });
+      }
+
       function setView(view) {
         setupView.hidden = view !== "setup";
+        previewView.hidden = view !== "preview";
         practiceView.hidden = view !== "practice";
         summaryView.hidden = view !== "summary";
       }
@@ -658,25 +869,15 @@
         if ($("#auto-loop").checked) speakCurrentSentence();
       }
 
-      function startPractice(restart) {
+      function startPractice() {
         if (!speechAvailable) {
           $("#voice-status").textContent = "Trình duyệt này không hỗ trợ Web Speech API; hãy dùng Chrome, Edge hoặc Safari mới.";
         }
-        if (!restart) {
-          passageMode = document.querySelector('input[name="passage-mode"]:checked').value;
-          sentences = parsePassage(passageInput.value, passageMode);
-          if (!sentences.length) {
-            $("#setup-error").textContent = "Vui lòng nhập ít nhất một câu tiếng Anh có nội dung.";
-            passageInput.focus();
-            return;
-          }
-          totalWords = sentences.reduce((count, sentence) => count + countWords(sentence.text), 0);
-          $("#setup-error").textContent = "";
-          buildSpeakerVoices();
-        }
+        previewRequest++;
         clearTimeout(advanceTimer);
         currentSentence = 0;
         mistakes = 0;
+        hintedWords = new Map();
         startedAt = performance.now();
         setView("practice");
         renderWordSlots();
@@ -761,6 +962,54 @@
         renderWordSlots();
       }
 
+      function renderFlashcard() {
+        const item = flashcardItems[currentFlashcard];
+        if (!item) return;
+        $("#flashcard-count").textContent = `Thẻ ${currentFlashcard + 1} / ${flashcardItems.length}`;
+        $("#flashcard-word").textContent = item.word;
+        const level = cefrWordLists.find((entry) => entry.level === item.level);
+        $("#flashcard-level").textContent = item.level === "unclassified"
+          ? "Chưa phân loại CEFR"
+          : `${item.level} · ${level.label}`;
+        $("#flashcard-side-label").textContent = flashcardFlipped ? "Định nghĩa" : "Từ";
+        $("#flashcard-detail").hidden = !flashcardFlipped;
+        $("#flashcard-detail").textContent = item.metadataError
+          ? "Definition unavailable."
+          : item.metadata
+            ? formatVocabularyMetadata(item.metadata)
+            : "Loading English definition...";
+        $("#flashcard-toggle").setAttribute("aria-pressed", String(flashcardFlipped));
+        $("#flashcard-previous").disabled = currentFlashcard === 0;
+        $("#flashcard-next").disabled = currentFlashcard === flashcardItems.length - 1;
+      }
+
+      function initializeFlashcards() {
+        flashcardItems = [...hintedWords.entries()].map(([key, word]) => ({
+          key,
+          word,
+          level: getWordLevel(key),
+          metadata: null,
+          metadataError: false
+        }));
+        currentFlashcard = 0;
+        flashcardFlipped = false;
+        const list = $("#hinted-word-list");
+        list.replaceChildren();
+        $("#flashcards-empty").hidden = flashcardItems.length > 0;
+        $("#flashcards-content").hidden = flashcardItems.length === 0;
+
+        if (!flashcardItems.length) return;
+
+        flashcardItems.forEach((item) => {
+          const entry = document.createElement("li");
+          entry.className = "rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-900";
+          entry.textContent = item.word;
+          list.append(entry);
+        });
+        renderFlashcard();
+        loadMetadataForItems(flashcardItems, () => renderFlashcard());
+      }
+
       function finishPractice() {
         stopPlayback("🎉 Đã hoàn thành bài luyện tập.");
         const accuracy = totalWords
@@ -775,6 +1024,7 @@
         $("#progress-percent").textContent = "100%";
         $("#progress-fill").style.width = "100%";
         practiceView.querySelector('[role="progressbar"]').setAttribute("aria-valuenow", "100");
+        initializeFlashcards();
         setView("summary");
         $("#new-passage-button").focus();
       }
@@ -870,8 +1120,14 @@
 
       $("#setup-form").addEventListener("submit", (event) => {
         event.preventDefault();
-        startPractice(false);
+        startPreview();
       });
+      $("#preview-back-button").addEventListener("click", () => {
+        previewRequest++;
+        setView("setup");
+        passageInput.focus();
+      });
+      $("#start-practice-button").addEventListener("click", startPractice);
       passageInput.addEventListener("input", () => {
         $("#setup-error").textContent = "";
       });
@@ -899,6 +1155,51 @@
           ? "🔊 Đang phát âm... Auto-Loop đã tắt."
           : "⏸️ Auto-Loop đã tắt. Bấm “Nghe ngay” để phát câu.";
       });
+      function getWordMetadata(word) {
+        const cacheKey = normalizeWord(word);
+        if (!wordMetadataCache.has(cacheKey)) {
+          const request = (async () => {
+            const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(cacheKey)}`);
+            if (!response.ok) throw new Error(`Metadata unavailable (${response.status})`);
+            const entries = await response.json();
+            const entry = entries?.[0];
+            const meanings = (entry?.meanings || []).map((meaning) => ({
+              partOfSpeech: meaning.partOfSpeech || "other",
+              definitions: [...new Set((meaning.definitions || [])
+                .map((definition) => definition.definition)
+                .filter(Boolean))]
+            }));
+            const partsOfSpeech = [...new Set(meanings.map((meaning) => meaning.partOfSpeech))];
+            const pronunciations = [...new Set([
+              entry?.phonetic,
+              ...(entry?.phonetics || []).map((phonetic) => phonetic.text)
+            ].filter(Boolean))];
+            return { partsOfSpeech, pronunciations, meanings };
+          })().catch((error) => {
+            wordMetadataCache.delete(cacheKey);
+            throw error;
+          });
+          wordMetadataCache.set(cacheKey, request);
+        }
+        return wordMetadataCache.get(cacheKey);
+      }
+
+      function formatPartOfSpeech(part) {
+        const abbreviations = {
+          noun: "n.",
+          verb: "v.",
+          adjective: "adj.",
+          adverb: "adv.",
+          pronoun: "pron.",
+          preposition: "prep.",
+          conjunction: "conj.",
+          interjection: "interj."
+        };
+        const normalizedPart = String(part || "Other");
+        const abbreviation = abbreviations[normalizedPart.toLowerCase()];
+        return abbreviation ? `${normalizedPart} (${abbreviation})` : normalizedPart;
+      }
+
       $("#hint-button").addEventListener("click", () => {
         if (sentenceFinished) return;
         const activeInput = document.activeElement;
@@ -909,14 +1210,35 @@
         currentWord = Number(input.dataset.index);
 
         const word = input.dataset.word;
+        hintedWords.set(normalizeWord(word), word);
         const letters = [...word.normalize("NFKC")].filter((character) => /\p{L}/u.test(character));
         const firstLetter = letters[0]?.toLocaleUpperCase() || "?";
         $("#hint-structure").textContent = `Chữ cái đầu: ${firstLetter} · Độ dài: ${letters.length} chữ cái`;
         const dictionaryLink = $("#hint-dictionary-link");
         dictionaryLink.href = `https://dictionary.cambridge.org/vi/dictionary/english/${encodeURIComponent(word.toLowerCase())}`;
         dictionaryLink.textContent = `Tra “${word}” trên Cambridge Dictionary ↗`;
+        const request = ++hintRequest;
+        $("#hint-metadata").textContent = "Đang tải từ loại và phiên âm...";
         $("#hint-panel").hidden = false;
         input.focus();
+
+        getWordMetadata(word).then((metadata) => {
+          if (request !== hintRequest) return;
+          const details = [];
+          if (metadata.partsOfSpeech.length) {
+            details.push(`Từ loại: ${metadata.partsOfSpeech.map(formatPartOfSpeech).join(", ")}`);
+          }
+          if (metadata.pronunciations.length) {
+            details.push(`IPA: ${metadata.pronunciations.join(", ")}`);
+          }
+          $("#hint-metadata").textContent = details.length
+            ? details.join(" · ")
+            : "Chưa tìm thấy từ loại hoặc phiên âm cho từ này.";
+        }).catch(() => {
+          if (request === hintRequest) {
+            $("#hint-metadata").textContent = "Không tải được từ loại/phiên âm. Bạn vẫn có thể tra từ trên Cambridge Dictionary.";
+          }
+        });
       });
       $("#next-sentence").addEventListener("click", advanceSentence);
       $("#leave-practice").addEventListener("click", () => {
@@ -925,7 +1247,23 @@
         setView("setup");
         passageInput.focus();
       });
-      $("#retry-button").addEventListener("click", () => startPractice(true));
+      $("#retry-button").addEventListener("click", startPractice);
+      $("#flashcard-toggle").addEventListener("click", () => {
+        flashcardFlipped = !flashcardFlipped;
+        renderFlashcard();
+      });
+      $("#flashcard-previous").addEventListener("click", () => {
+        if (currentFlashcard === 0) return;
+        currentFlashcard--;
+        flashcardFlipped = false;
+        renderFlashcard();
+      });
+      $("#flashcard-next").addEventListener("click", () => {
+        if (currentFlashcard >= flashcardItems.length - 1) return;
+        currentFlashcard++;
+        flashcardFlipped = false;
+        renderFlashcard();
+      });
       $("#new-passage-button").addEventListener("click", () => {
         clearTimeout(advanceTimer);
         passageInput.value = "";
