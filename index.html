@@ -147,10 +147,14 @@
         <div class="mb-6">
           <p class="mb-2 text-xs font-bold uppercase tracking-[.16em] text-brand">Preview vocab</p>
           <h1 id="preview-title" class="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">Từ vựng trong đoạn văn</h1>
-          <p class="mt-2 text-sm leading-6 text-muted">Danh sách từ duy nhất, cấp độ CEFR ước lượng từ danh sách từ phổ biến; từ chưa có trong danh sách sẽ được đánh dấu chưa phân loại. Định nghĩa tiếng Anh và từ loại được tải từ Free Dictionary API.</p>
+          <p class="mt-2 text-sm leading-6 text-muted">Danh sách từ duy nhất được chia theo cấp độ CEFR ước lượng. Từ loại và IPA lấy từ Free Dictionary API; dùng liên kết Cambridge hoặc Google để tra nghĩa.</p>
         </div>
         <p id="preview-status" class="mb-4 text-sm text-muted" role="status" aria-live="polite"></p>
-        <div id="vocabulary-list" class="max-h-[55vh] space-y-5 overflow-y-auto pr-1"></div>
+        <div id="vocabulary-list" class="grid max-h-[60vh] grid-cols-1 items-start gap-3 overflow-y-auto pr-1 md:grid-cols-3"></div>
+        <section id="unclassified-vocabulary" class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4" aria-labelledby="unclassified-title" hidden>
+          <h2 id="unclassified-title" class="mb-2 text-sm font-extrabold text-slate-700">Chưa phân loại CEFR</h2>
+          <ul id="unclassified-vocabulary-list" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3"></ul>
+        </section>
         <div class="mt-6 flex flex-col-reverse justify-between gap-3 sm:flex-row">
           <button id="preview-back-button" type="button" class="min-h-11 rounded-xl border border-line bg-white px-5 text-sm font-bold text-ink transition hover:border-brand hover:text-brand">Quay lại chỉnh sửa</button>
           <button id="start-practice-button" type="button" class="min-h-11 rounded-xl bg-brand px-5 text-sm font-bold text-white transition hover:bg-blue-700">Bắt đầu luyện tập →</button>
@@ -262,17 +266,18 @@
         </dl>
         <p id="summary-time" class="mt-4 text-center text-xs text-muted"></p>
         <section id="flashcards-section" class="mt-7 rounded-2xl border border-line bg-slate-50/70 p-4 sm:p-6" aria-labelledby="flashcards-title">
-          <h2 id="flashcards-title" class="text-lg font-extrabold text-ink">Từ bạn đã cần gợi ý</h2>
-          <p class="mt-1 text-sm leading-6 text-muted">Danh sách từ cần ôn và flashcards. Bấm vào thẻ để lật xem từ loại và định nghĩa tiếng Anh.</p>
-          <p id="flashcards-empty" class="mt-4 rounded-xl bg-white p-4 text-sm text-muted" hidden>Bạn không dùng gợi ý trong bài này — tuyệt vời!</p>
+          <h2 id="flashcards-title" class="text-lg font-extrabold text-ink">Từ cần ôn lại</h2>
+          <p class="mt-1 text-sm leading-6 text-muted">Gồm từ bạn gõ sai hoặc đã cần gợi ý. Bấm vào thẻ để lật xem từ loại, IPA và liên kết tra cứu.</p>
+          <p id="flashcards-empty" class="mt-4 rounded-xl bg-white p-4 text-sm text-muted" hidden>Bạn không gõ sai và cũng không cần gợi ý từ nào — tuyệt vời!</p>
           <div id="flashcards-content" hidden>
-            <ul id="hinted-word-list" class="mt-4 flex flex-wrap gap-2" aria-label="Danh sách từ đã cần gợi ý"></ul>
+            <ul id="hinted-word-list" class="mt-4 flex flex-wrap gap-2" aria-label="Danh sách từ cần ôn lại"></ul>
             <p id="flashcard-count" class="mt-5 text-center text-xs font-semibold text-muted"></p>
             <button id="flashcard-toggle" type="button" class="mt-2 flex min-h-48 w-full flex-col items-center justify-center gap-3 rounded-2xl border border-blue-100 bg-white p-6 text-center shadow-sm transition hover:border-brand focus-visible:outline-brand" aria-pressed="false">
               <span id="flashcard-side-label" class="text-xs font-bold uppercase tracking-wider text-brand">Từ</span>
               <span id="flashcard-word" class="text-2xl font-extrabold text-ink"></span>
               <span id="flashcard-level" class="text-xs font-semibold text-muted"></span>
               <span id="flashcard-detail" class="max-w-xl text-sm leading-6 text-muted" hidden></span>
+              <span id="flashcard-links" class="flex gap-4 text-sm font-bold text-brand underline underline-offset-2" hidden></span>
               <span class="text-xs text-muted">Bấm để lật thẻ</span>
             </button>
             <div class="mt-4 flex items-center justify-center gap-3">
@@ -334,6 +339,7 @@
       let vocabularyItems = [];
       let previewRequest = 0;
       let hintedWords = new Map();
+      let mistakenWords = new Map();
       let flashcardItems = [];
       let currentFlashcard = 0;
       let flashcardFlipped = false;
@@ -461,54 +467,76 @@
       }
 
       function formatVocabularyMetadata(metadata) {
-        const meanings = metadata.meanings
-          .filter((meaning) => meaning.definitions.length)
-          .map((meaning) => `${formatPartOfSpeech(meaning.partOfSpeech)}: ${meaning.definitions.slice(0, 2).join("; ")}`);
-        return meanings.length ? meanings.join(" · ") : "No English definition or part of speech found.";
+        const details = [];
+        if (metadata.partsOfSpeech.length) {
+          details.push(`Từ loại: ${metadata.partsOfSpeech.map(formatPartOfSpeech).join(", ")}`);
+        }
+        if (metadata.pronunciations.length) {
+          details.push(`IPA: ${metadata.pronunciations.join(", ")}`);
+        }
+        return details.length ? details.join(" · ") : "Chưa tìm thấy từ loại hoặc IPA.";
       }
 
       function renderVocabularyPreview() {
         const list = $("#vocabulary-list");
         list.replaceChildren();
+        const unclassifiedList = $("#unclassified-vocabulary-list");
+        unclassifiedList.replaceChildren();
+        const unclassifiedItems = vocabularyItems.filter((item) => item.level === "unclassified");
+        $("#unclassified-vocabulary").hidden = unclassifiedItems.length === 0;
         const groups = [
-          ...cefrWordLists.map(({ level, label }) => ({ level, label })),
-          { level: "unclassified", label: "Chưa phân loại" }
+          { level: "A1-A2", label: "Beginner", color: "border-emerald-200 bg-emerald-50 text-emerald-900" },
+          { level: "B1-B2", label: "Intermediate", color: "border-sky-200 bg-sky-50 text-sky-900" },
+          { level: "C1-C2", label: "Advanced", color: "border-violet-200 bg-violet-50 text-violet-900" }
         ];
 
-        groups.forEach(({ level, label }) => {
-          const items = vocabularyItems.filter((item) => item.level === level);
-          if (!items.length) return;
+        const renderWordItem = (item, target, color) => {
+          const row = document.createElement("li");
+          row.className = `rounded-xl border p-3 ${color}`;
+          const title = document.createElement("div");
+          title.className = "flex flex-wrap items-center justify-between gap-2";
+          const word = document.createElement("span");
+          word.className = "font-bold";
+          word.textContent = item.word;
+          const count = document.createElement("span");
+          count.className = "text-xs opacity-70";
+          count.textContent = `${item.count}×`;
+          title.append(word, count);
+          const details = document.createElement("p");
+          details.className = "mt-1 text-xs leading-5";
+          details.textContent = "Đang tải từ loại và IPA...";
+          item.detailsElement = details;
+          const links = document.createElement("div");
+          links.className = "mt-2 flex gap-3 text-xs font-bold underline underline-offset-2";
+          const cambridgeLink = document.createElement("a");
+          cambridgeLink.href = `https://dictionary.cambridge.org/vi/dictionary/english/${encodeURIComponent(item.key)}`;
+          cambridgeLink.textContent = "Cambridge";
+          cambridgeLink.target = "_blank";
+          cambridgeLink.rel = "noopener noreferrer";
+          const googleLink = document.createElement("a");
+          googleLink.href = `https://www.google.com/search?q=${encodeURIComponent(`define ${item.key}`)}`;
+          googleLink.textContent = "Google";
+          googleLink.target = "_blank";
+          googleLink.rel = "noopener noreferrer";
+          links.append(cambridgeLink, googleLink);
+          row.append(title, details, links);
+          target.append(row);
+        };
 
+        groups.forEach(({ level, label, color }) => {
+          const items = vocabularyItems.filter((item) => item.level === level);
           const section = document.createElement("section");
+          section.className = `min-w-0 rounded-2xl border p-3 ${color}`;
           const heading = document.createElement("h2");
-          heading.className = "mb-2 text-sm font-extrabold text-ink";
-          heading.textContent = `${level === "unclassified" ? label : `${level} · ${label}`} (${items.length})`;
+          heading.className = "mb-3 text-sm font-extrabold";
+          heading.textContent = `${level} · ${label} (${items.length})`;
           const entries = document.createElement("ul");
           entries.className = "space-y-2";
-
-          items.forEach((item) => {
-            const row = document.createElement("li");
-            row.className = "rounded-xl border border-line bg-white p-3";
-            const title = document.createElement("div");
-            title.className = "flex flex-wrap items-center justify-between gap-2";
-            const word = document.createElement("span");
-            word.className = "font-bold text-ink";
-            word.textContent = item.word;
-            const count = document.createElement("span");
-            count.className = "text-xs text-muted";
-            count.textContent = `${item.count}×`;
-            title.append(word, count);
-            const details = document.createElement("p");
-            details.className = "mt-1 text-sm leading-6 text-muted";
-            details.textContent = "Đang tải từ loại và định nghĩa tiếng Anh...";
-            item.detailsElement = details;
-            row.append(title, details);
-            entries.append(row);
-          });
-
+          items.forEach((item) => renderWordItem(item, entries, "border-white/80 bg-white/80"));
           section.append(heading, entries);
           list.append(section);
         });
+        unclassifiedItems.forEach((item) => renderWordItem(item, unclassifiedList, "border-slate-200 bg-white"));
       }
 
       async function loadMetadataForItems(items, onProgress) {
@@ -526,7 +554,7 @@
             completed++;
             if (item.detailsElement) {
               item.detailsElement.textContent = item.metadataError
-                ? "Definition unavailable."
+                ? "Không tải được từ loại hoặc IPA."
                 : formatVocabularyMetadata(item.metadata);
             }
             onProgress(completed, items.length, item);
@@ -552,10 +580,11 @@
         buildSpeakerVoices();
         vocabularyItems = collectVocabulary();
         hintedWords = new Map();
+        mistakenWords = new Map();
         setView("preview");
         renderVocabularyPreview();
         const request = ++previewRequest;
-        $("#preview-status").textContent = `Đang tải định nghĩa cho ${vocabularyItems.length} từ...`;
+        $("#preview-status").textContent = `Đang tải từ loại và IPA cho ${vocabularyItems.length} từ...`;
         loadMetadataForItems(vocabularyItems, (completed, total) => {
           if (request === previewRequest) {
             $("#preview-status").textContent = `Đã tra ${completed} / ${total} từ.`;
@@ -878,6 +907,7 @@
         currentSentence = 0;
         mistakes = 0;
         hintedWords = new Map();
+        mistakenWords = new Map();
         startedAt = performance.now();
         setView("practice");
         renderWordSlots();
@@ -896,6 +926,12 @@
 
       function markWrong(input) {
         mistakes++;
+        const key = normalizeWord(input.dataset.word);
+        const missed = mistakenWords.get(key);
+        mistakenWords.set(key, {
+          word: input.dataset.word,
+          count: (missed?.count || 0) + 1
+        });
         input.classList.remove("is-wrong", "shake");
         void input.offsetWidth;
         input.classList.add("is-wrong", "shake");
@@ -971,26 +1007,54 @@
         $("#flashcard-level").textContent = item.level === "unclassified"
           ? "Chưa phân loại CEFR"
           : `${item.level} · ${level.label}`;
-        $("#flashcard-side-label").textContent = flashcardFlipped ? "Định nghĩa" : "Từ";
+        $("#flashcard-side-label").textContent = flashcardFlipped ? "Tra cứu" : "Từ";
         $("#flashcard-detail").hidden = !flashcardFlipped;
         $("#flashcard-detail").textContent = item.metadataError
-          ? "Definition unavailable."
+          ? "Không tải được từ loại hoặc IPA."
           : item.metadata
             ? formatVocabularyMetadata(item.metadata)
-            : "Loading English definition...";
+            : "Loading part of speech and IPA...";
+        const links = $("#flashcard-links");
+        links.hidden = !flashcardFlipped;
+        links.replaceChildren();
+        if (flashcardFlipped) {
+          [
+            {
+              label: "Cambridge",
+              href: `https://dictionary.cambridge.org/vi/dictionary/english/${encodeURIComponent(item.key)}`
+            },
+            {
+              label: "Google",
+              href: `https://www.google.com/search?q=${encodeURIComponent(`define ${item.key}`)}`
+            }
+          ].forEach(({ label, href }) => {
+            const link = document.createElement("a");
+            link.href = href;
+            link.textContent = label;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            links.append(link);
+          });
+        }
         $("#flashcard-toggle").setAttribute("aria-pressed", String(flashcardFlipped));
         $("#flashcard-previous").disabled = currentFlashcard === 0;
         $("#flashcard-next").disabled = currentFlashcard === flashcardItems.length - 1;
       }
 
       function initializeFlashcards() {
-        flashcardItems = [...hintedWords.entries()].map(([key, word]) => ({
-          key,
-          word,
-          level: getWordLevel(key),
-          metadata: null,
-          metadataError: false
-        }));
+        const wordsToReview = new Set([...hintedWords.keys(), ...mistakenWords.keys()]);
+        flashcardItems = [...wordsToReview].map((key) => {
+          const missed = mistakenWords.get(key);
+          return {
+            key,
+            word: hintedWords.get(key) || missed.word,
+            hinted: hintedWords.has(key),
+            mistakes: missed?.count || 0,
+            level: getWordLevel(key),
+            metadata: null,
+            metadataError: false
+          };
+        });
         currentFlashcard = 0;
         flashcardFlipped = false;
         const list = $("#hinted-word-list");
@@ -1002,8 +1066,22 @@
 
         flashcardItems.forEach((item) => {
           const entry = document.createElement("li");
-          entry.className = "rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-900";
-          entry.textContent = item.word;
+          entry.className = "flex flex-wrap items-center gap-2 rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-900";
+          const word = document.createElement("span");
+          word.textContent = item.word;
+          entry.append(word);
+          if (item.mistakes) {
+            const errorCount = document.createElement("span");
+            errorCount.className = "rounded-full bg-rose-100 px-2 py-0.5 text-rose-800";
+            errorCount.textContent = `Sai ${item.mistakes}×`;
+            entry.append(errorCount);
+          }
+          if (item.hinted) {
+            const hintLabel = document.createElement("span");
+            hintLabel.className = "rounded-full bg-blue-100 px-2 py-0.5 text-blue-800";
+            hintLabel.textContent = "Đã gợi ý";
+            entry.append(hintLabel);
+          }
           list.append(entry);
         });
         renderFlashcard();
@@ -1163,18 +1241,14 @@
             if (!response.ok) throw new Error(`Metadata unavailable (${response.status})`);
             const entries = await response.json();
             const entry = entries?.[0];
-            const meanings = (entry?.meanings || []).map((meaning) => ({
-              partOfSpeech: meaning.partOfSpeech || "other",
-              definitions: [...new Set((meaning.definitions || [])
-                .map((definition) => definition.definition)
-                .filter(Boolean))]
-            }));
-            const partsOfSpeech = [...new Set(meanings.map((meaning) => meaning.partOfSpeech))];
+            const partsOfSpeech = [...new Set((entry?.meanings || [])
+              .map((meaning) => meaning.partOfSpeech)
+              .filter(Boolean))];
             const pronunciations = [...new Set([
               entry?.phonetic,
               ...(entry?.phonetics || []).map((phonetic) => phonetic.text)
             ].filter(Boolean))];
-            return { partsOfSpeech, pronunciations, meanings };
+            return { partsOfSpeech, pronunciations };
           })().catch((error) => {
             wordMetadataCache.delete(cacheKey);
             throw error;
