@@ -7,33 +7,4 @@ The app runs a four-step flow: full-passage listening (up to 5 plays), local sum
 
 The summary step extracts up to three salient sentences as a reference and compares content-word overlap with the learner's summary using an F1 score. This is a local lexical estimate, not semantic or translation-aware AI evaluation; the UI explains that limitation. A 50% score unlocks the next step, and learners may also skip the comparison.
 
-Vocabulary example checks are sent to the same-origin `POST /api/ai/evaluate` endpoint. The repository is a static frontend and does not include that server route or an AI provider credential. Implement the route on a trusted server; do not put provider API keys in `index.html`. The frontend sends:
-
-```json
-{
-  "task": "vocabulary",
-  "prompt": {
-    "system": "Use the strict vocabulary evaluator prompt from index.html.",
-    "responseSchema": {}
-  },
-  "input": {
-    "sourcePassage": "Original passage",
-    "targetWord": "example",
-    "exampleSentence": "This is an example sentence."
-  }
-}
-```
-
-The proxy must pass the system prompt and JSON schema to the selected LLM, enforce JSON output, and return the validated object in this envelope:
-
-```json
-{
-  "result": {
-    "grammarCorrect": true,
-    "contextCorrect": true,
-    "feedback": "Câu đúng ngữ pháp và dùng từ phù hợp."
-  }
-}
-```
-
-Vocabulary results require boolean `grammarCorrect` and `contextCorrect` fields plus string `feedback`; both booleans must be true to pass. Invalid responses and network errors are shown to the learner, but the vocabulary step can be skipped.
+Vocabulary example checks run entirely in the browser without an AI endpoint. The local heuristic checks capitalization, terminal punctuation, sentence length, a basic subject/verb pattern, target-word occurrence (including common inflections), and overlap between content words in the example and the source sentence containing the target word. It reports separate grammar/context estimates and only unlocks dictation when both reach the threshold. This is intentionally a lightweight fallback, not a full grammar parser or semantic model; learners can skip the vocabulary step if the estimate is not appropriate.
